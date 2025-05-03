@@ -1,7 +1,3 @@
-Absolutely — here's the same `README.md`, **with all the emoji/icons removed** for a clean, professional version:
-
----
-
 # Universal Auth Middleware for SaaS
 
 ## Solving the Fragmented Authentication Problem
