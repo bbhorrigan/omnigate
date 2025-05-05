@@ -79,6 +79,4 @@ If you're interested in building adapters, improving security, or adding policy 
 
 Reach out on GitHub Discussions or email me at peter.horrigan@linux.com
 
----
 
-Would you like me to turn this into a GitHub-ready project scaffold (`README.md`, `/src`, `/docs`, etc.)?
