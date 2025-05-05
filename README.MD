@@ -67,11 +67,7 @@ This inconsistency leads to:
 
 This is a work in progress. Contributions, design feedback, and collaboration are welcome.
 
----
 
-## Contributing
-
-If you're interested in building adapters, improving security, or adding policy logic, open an issue or submit a pull request.
 
 ---
 
