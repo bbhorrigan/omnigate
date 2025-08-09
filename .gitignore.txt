@@ -1,5 +1,105 @@
+# --- OS cruft ---
+.DS_Store
+Thumbs.db
+
+# --- Node / TypeScript ---
 node_modules/
 dist/
+build/
+out/
+.cache/
+.turbo/
+.nyc_output/
+coverage/
+.eslintcache
+.stylelintcache
+*.tsbuildinfo
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# --- Env & local config (keep templates) ---
 .env
-*.env
-.DS_Store
+.env.*
+!.env.example
+!.env.template
+.envrc
+
+# --- Editors/IDEs ---
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.iml
+
+# --- Docker / Devcontainers ---
+.docker/
+docker/*.env
+docker/**/.env
+.devcontainer/
+docker-compose.override.yml
+
+# --- Kubernetes / Helm ---
+.kube/
+kubeconfig
+# local-only values and rendered manifests
+**/values.local.yaml
+**/values.dev.yaml
+**/values.override.yaml
+manifests-rendered/
+# packaged charts
+**/charts/**/*.tgz
+# Helm cache
+.helm/
+helm-cache/
+helm-repository/
+
+# --- Terraform ---
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+# local/secret vars (keep examples)
+terraform.tfvars
+*.auto.tfvars
+!terraform.tfvars.example
+!*.auto.tfvars.example
+# override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# --- Certificates/keys (never commit secrets) ---
+*.pem
+*.key
+*.pfx
+*.p12
+*.crt
+*.cert
+*.csr
+id_rsa*
+id_ecdsa*
+id_ed25519*
+*.keystore
+*.jks
+
+# --- Temporary & cache dirs ---
+tmp/
+temp/
+.tmp/
+
+# --- Monorepo packages (adjust as needed) ---
+packages/*/dist/
+packages/*/build/
+packages/*/.cache/
+
+# --- Misc build outputs ---
+coverage-final.json
+junit.xml
+.tap
