@@ -1,0 +1,45 @@
+Lane 1 – Interactive Flow
+User Browser / App (rectangle with user icon)
+
+Label: End User / Frontend App
+
+→ arrow → OAuth IdP (circle or rounded rectangle, e.g., Okta, Azure, Ping)
+
+Label: OAuth 2.0 Authorization Code Flow
+
+→ arrow → Snowflake Proxy (big rounded rectangle, the “translation engine”)
+
+Inside proxy box:
+
+Token Validation (verify with IdP JWKS)
+
+Policy Engine (map claims → Snowflake role/warehouse)
+
+Vault/KMS (fetch RSA private key)
+
+→ arrow → Snowflake (database cylinder shape)
+
+Label: RSA Key Pair Auth
+
+Lane 2 – M2M Flow
+Service / Pipeline (rectangle with gear icon)
+
+Label: ETL / Data Pipeline
+
+→ arrow → OAuth Token Endpoint (rounded rectangle)
+
+Label: Client Credentials / Private Key JWT
+
+→ arrow → Snowflake Proxy (same big rounded rectangle)
+
+Inside proxy box for M2M:
+
+mTLS Termination (optional, cert validation)
+
+Token Binding (DPoP-like cnf check)
+
+Policy Engine (map client_id → Snowflake role/warehouse)
+
+Vault/KMS (fetch RSA private key)
+
+→ arrow → Snowflake (same database cylinder)
