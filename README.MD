@@ -31,7 +31,7 @@ This inconsistency leads to:
   Accept WebAuthn, OIDC, SAML, etc., and convert to downstream formats
 
 * **Credential Mapping**
-  Your GitHub identity becomes whatever the SaaS needs (email, username, etc.)
+  Pipeland maping
 
 * **Centralized Access Management**
   One identity, one place to manage policies and access rights
