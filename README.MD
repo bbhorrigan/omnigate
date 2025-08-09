@@ -73,6 +73,6 @@ This is a work in progress. Contributions, design feedback, and collaboration ar
 
 ## Contact
 
-Reach out on GitHub Discussions or email me at peter.horrigan@linux.com
+email me at peter.horrigan@linux.com
 
 
