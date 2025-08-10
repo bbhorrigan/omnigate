@@ -21,7 +21,7 @@ We take security issues in Omnigate seriously. If you believe you’ve discovere
 
 **How to report:**
 
-* Email: peter.horrigan@snowflake.com
+* Email: peter.horrigan@linux.com
 * PGP key: \-----BEGIN PGP PUBLIC KEY BLOCK-----
 Version: Keybase OpenPGP v1.0.0
 Comment: https://keybase.io/crypto
