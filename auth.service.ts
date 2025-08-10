@@ -1,7 +1,11 @@
 import { DataSource } from 'typeorm';
-import { AppDataSource } from '../config/db';
-import { User } from '../entities/User';
-import { SaaSMapping } from '../entities/SaaSMapping';
+// Local imports
+// Use the repository root paths since the project currently keeps all source
+// files at the top level. The previous relative paths pointed to non‑existent
+// directories which prevented the service from starting.
+import { AppDataSource } from './db';
+import { User } from './user';
+import { SaaSMapping } from './SaaSMapping';
 import { cacheToken } from './cache';
 
 type Credentials = Record<string, unknown>;

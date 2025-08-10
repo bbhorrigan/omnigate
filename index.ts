@@ -1,10 +1,14 @@
 import express from 'express';
 import passport from 'passport';
 import { Strategy as GitHubStrategy } from 'passport-github2';
-import { initDB } from './config/db';
-import { initRedis } from './services/cache';
-import { AuthService } from './services/auth.service';
-import { redisClient } from './services/cache';
+// Local modules
+// Use direct paths because the project currently keeps source files in the
+// repository root instead of under a `src/` directory. The previous imports
+// referenced non‑existent `config` and `services` folders which would cause the
+// server to crash on startup.
+import { initDB, AppDataSource } from './db';
+import { initRedis, redisClient } from './cache';
+import { AuthService } from './auth.service';
 
 const app = express();
 app.use(express.json());
