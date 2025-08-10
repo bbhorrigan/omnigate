@@ -3,6 +3,7 @@
 ## Solving the Fragmented Authentication Problem
 
 SaaS pipeline communication is inconsistent and frustrating. Some platforms support client credential flow, others only support certain patterns, and many still rely on email/password combinations. Advanced protocols like SAML are often locked behind expensive enterprise tiers.
+![Omnigate Screenshot](omnigate.png)
 
 This inconsistency leads to:
 
