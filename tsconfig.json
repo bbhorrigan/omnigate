@@ -3,7 +3,9 @@
     "target": "ES2022",
     "module": "commonjs",
     "outDir": "./dist",
-    "rootDir": "./src",
+    // Source files live at the repository root rather than under `src/`,
+    // so compile from the current directory.
+    "rootDir": "./",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,

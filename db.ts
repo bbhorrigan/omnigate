@@ -1,7 +1,10 @@
-// src/config/db.ts
+// Database configuration and connection utilities.
 import { DataSource, DataSourceOptions } from 'typeorm';
-import { User } from '../entities/User';
-import { SaaSMapping } from '../entities/SaaSMapping';
+// Local entities
+// The original paths assumed a nested `entities/` folder, but the project keeps
+// entity files in the repository root. Adjust imports accordingly.
+import { User } from './user';
+import { SaaSMapping } from './SaaSMapping';
 
 const toInt = (v: string | undefined, def: number) =>
   Number.isFinite(Number(v)) ? parseInt(String(v!), 10) : def;
