@@ -23,8 +23,6 @@ We take security issues in Omnigate seriously. If you believe you’ve discovere
 
 * Email: peter.horrigan@linux.com
 * PGP key: \-----BEGIN PGP PUBLIC KEY BLOCK-----
-Version: Keybase OpenPGP v1.0.0
-Comment: https://keybase.io/crypto
 
 xsBNBGiYJukBCADpc/8jwynRpVfkfgljN4Brbi/lKjvNbv7xJ3XvlfNH8GsopwwE
 D4vzTQgcS+7teFpQm/KJkgpKytKLYvaWWJo0+6Z8SrjS/EesXX6gTv6IID/wKWxb
