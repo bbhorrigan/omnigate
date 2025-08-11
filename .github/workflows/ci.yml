@@ -45,19 +45,22 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
-          cache: "npm"
+
 
       - name: Install deps
-        run: npm ci
+        run: npm install
 
       - name: Type check
         run: npx tsc -p tsconfig.json --noEmit
 
       - name: Lint
-        run: npx eslint . --max-warnings=0
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
 
       - name: Test
-        run: npm test -- --ci --reporters=default --reporters=jest-junit
+        run: npm test
         env:
           JEST_JUNIT_OUTPUT: junit.xml
 
