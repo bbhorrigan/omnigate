@@ -54,10 +54,13 @@ jobs:
         run: npx tsc -p tsconfig.json --noEmit
 
       - name: Lint
-        run: npx eslint . --max-warnings=0
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
 
       - name: Test
-        run: npm test -- --ci --reporters=default --reporters=jest-junit
+        run: npm test
         env:
           JEST_JUNIT_OUTPUT: junit.xml
 
