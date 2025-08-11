@@ -12,6 +12,9 @@ permissions:
 jobs:
   ci:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: ['18', '20']
 
     services:
       postgres:
@@ -41,11 +44,10 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
-          cache: "npm"
+          node-version: ${{ matrix.node }}
 
       - name: Install deps
-        run: npm ci
+        run: npm install
 
       - name: Type check
         run: npx tsc -p tsconfig.json --noEmit
