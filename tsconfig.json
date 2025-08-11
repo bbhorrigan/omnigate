@@ -12,5 +12,6 @@
     "forceConsistentCasingInFileNames": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
-  }
+  },
+  "exclude": ["tests", "src/__tests__", "jest.config.ts", "jest.config.js", "frontend"]
 }

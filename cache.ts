@@ -1,6 +1,6 @@
-import { createClient, RedisClientType } from 'redis';
+import { createClient } from 'redis';
 
-let redisClient: RedisClientType | null = null;
+let redisClient: any = null;
 
 export const initRedis = async () => {
   if (redisClient) return redisClient; // prevent multiple connects
@@ -8,7 +8,7 @@ export const initRedis = async () => {
   redisClient = createClient({
     url: process.env.REDIS_URL || 'redis://localhost:6379',
     socket: {
-      reconnectStrategy: (retries) => {
+      reconnectStrategy: (retries: number) => {
         // Retry with linear backoff: 100ms * retries, capped at 3 seconds
         if (retries > 10) return new Error('Redis reconnect limit reached');
         return Math.min(retries * 100, 3000);
@@ -16,7 +16,7 @@ export const initRedis = async () => {
     }
   });
 
-  redisClient.on('error', (err) => {
+  redisClient.on('error', (err: any) => {
     console.error('Redis error:', err);
   });
 

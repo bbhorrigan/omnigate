@@ -4,20 +4,20 @@ import { SaaSMapping } from './SaaSMapping';
 @Entity({ name: 'users' })
 export class User {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column({ type: 'varchar', unique: true })
-  email: string;
+  email!: string;
 
   @Column({ type: 'varchar', nullable: true })
   githubId?: string;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  createdAt: Date;
+  createdAt!: Date;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
-  updatedAt: Date;
+  updatedAt!: Date;
 
   @OneToMany(() => SaaSMapping, mapping => mapping.user, { cascade: true })
-  saasMappings: SaaSMapping[];
+  saasMappings!: SaaSMapping[];
 }
