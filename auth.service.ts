@@ -1,8 +1,4 @@
 import { DataSource } from 'typeorm';
-// Local imports
-// Use the repository root paths since the project currently keeps all source
-// files at the top level. The previous relative paths pointed to non‑existent
-// directories which prevented the service from starting.
 import { AppDataSource } from './db';
 import { User } from './user';
 import { SaaSMapping } from './SaaSMapping';
