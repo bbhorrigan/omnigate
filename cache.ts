@@ -9,7 +9,7 @@ export const initRedis = async () => {
     url: process.env.REDIS_URL || 'redis://localhost:6379',
     socket: {
       reconnectStrategy: (retries) => {
-        // Retry with exponential backoff, up to ~1 minute
+        // Retry with linear backoff: 100ms * retries, capped at 3 seconds
         if (retries > 10) return new Error('Redis reconnect limit reached');
         return Math.min(retries * 100, 3000);
       }
