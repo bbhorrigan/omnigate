@@ -42,18 +42,18 @@ Promise.all([initDB(), initRedis()])
     // Routes
     app.get('/auth/github', passport.authenticate('github', { scope: ['user:email'] }));
     
-    app.get('/auth/github/callback', 
+    app.get('/auth/github/callback',
       passport.authenticate('github', { failureRedirect: '/login' }),
-      (req, res) => {
+      (req: any, res: any) => {
         res.json({ success: true, userId: (req.user as any).id });
       }
     );
 
-    app.get('/health', (_, res) => {
-      res.json({ 
+    app.get('/health', (_: any, res: any) => {
+      res.json({
         status: 'OK',
         db: AppDataSource.isInitialized,
-        redis: redisClient.isOpen
+        redis: redisClient?.isOpen ?? false
       });
     });
 

@@ -2,7 +2,7 @@
   "name": "auth-middleware",
   "version": "1.1.0",
   "description": "Authentication middleware for Omnigate",
-  "type": "module",
+  "type": "commonjs",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -10,10 +10,9 @@
     "dev": "ts-node src/index.ts",
     "lint": "eslint . --ext .ts",
     "format": "prettier --write .",
-    "test": "jest --runInBand",
+    "test": "npm run build && node --test tests/*.test.js",
     "migration:generate": "typeorm-ts-node-commonjs migration:generate",
-    "migration:run": "typeorm-ts-node-commonjs migration:run",
-    "test": "jest"
+    "migration:run": "typeorm-ts-node-commonjs migration:run"
   },
   "dependencies": {
     "@simplewebauthn/server": "^8.3.1",
@@ -26,6 +25,5 @@
     "typeorm": "^0.3.20"
   },
   "devDependencies": {
-
   }
 }

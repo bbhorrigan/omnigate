@@ -40,7 +40,7 @@ export class AuthService {
       {
         user: { id: user.id } as User, // minimal relation reference
         saasType,
-        credentials,
+        credentials: credentials as any,
       },
       {
         conflictPaths: ['userId', 'saasType'],
@@ -78,7 +78,7 @@ export class AuthService {
         {
           user: { id: user.id } as User,
           saasType,
-          credentials,
+          credentials: credentials as any,
         },
         {
           conflictPaths: ['userId', 'saasType'],

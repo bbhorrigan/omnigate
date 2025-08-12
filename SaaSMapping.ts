@@ -7,28 +7,28 @@ import {
   UpdateDateColumn,
   Index,
 } from 'typeorm';
-import { User } from './User';
+import { User } from './user';
 
 @Entity({ name: 'saas_mappings' })
 export class SaaSMapping {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Index()
   @Column({ type: 'varchar', length: 100, nullable: false })
-  saasType: string;
+  saasType!: string;
 
   @Column({ type: 'jsonb', nullable: false })
-  credentials: Record<string, any>;
+  credentials!: Record<string, any>;
 
-  @ManyToOne(() => User, (user) => user.saasMappings, {
+  @ManyToOne(() => User, (user: User) => user.saasMappings, {
     onDelete: 'CASCADE', // Remove mappings if user is deleted
   })
-  user: User;
+  user!: User;
 
   @CreateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
-  updatedAt: Date;
+  updatedAt!: Date;
 }
