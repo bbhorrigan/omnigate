@@ -1,0 +1,265 @@
+
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Omnigate • Setup</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Tailwind config: modern, rounded, subtle colors
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef8ff', 100: '#d8edff', 200: '#b9dbff', 300: '#8ec4ff', 400: '#61a9ff',
+              500: '#3a8fff', 600: '#2375f2', 700: '#1a5ed0', 800: '#174fa8', 900: '#154387'
+            }
+          },
+          boxShadow: {
+            soft: '0 8px 24px rgba(0,0,0,0.08)'
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    html, body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
+  </style>
+</head>
+<body class="h-full bg-slate-50 text-slate-900">
+  <!-- Top Nav -->
+  <header class="sticky top-0 z-40 backdrop-blur bg-white/80 border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex items-center gap-3">
+          <div class="h-9 w-9 rounded-2xl bg-brand-600 grid place-items-center text-white font-bold shadow-soft">OG</div>
+          <div class="hidden sm:block">
+            <span class="text-lg font-semibold">Omnigate</span>
+            <span class="ml-2 text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 align-middle">Demo</span>
+          </div>
+        </div>
+
+        <nav class="hidden md:flex items-center gap-6 text-sm">
+          <a class="font-medium text-brand-700" href="#">Dashboard</a>
+          <a class="text-slate-600 hover:text-slate-900" href="#auth">Auth Methods</a>
+          <a class="text-slate-600 hover:text-slate-900" href="#cloud">Connections</a>
+          <a class="text-slate-600 hover:text-slate-900" href="#activity">Activity</a>
+          <a class="text-slate-600 hover:text-slate-900" href="#settings">Settings</a>
+        </nav>
+
+        <div class="flex items-center gap-3">
+          <div class="relative">
+            <input id="globalSearch" type="search" placeholder="Search…" class="w-40 md:w-64 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-4 ring-brand-100" />
+            <span class="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs">⌘K</span>
+          </div>
+          <button id="themeToggle" class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm hover:bg-slate-50">🌙</button>
+          <div class="h-8 w-8 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 text-white grid place-items-center text-xs font-semibold">PH</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <section class="mb-8">
+      <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">Welcome back </h1>
+          <p class="text-slate-600 mt-2 max-w-2xl">What would you like to set up today? Choose an <span class="font-medium">authentication method</span> and the <span class="font-medium">cloud service</span> to connect. This is the first screen users see after they log in.</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-soft">
+            <div class="text-xs text-slate-500">Setup Progress</div>
+            <div class="mt-1 h-2 w-56 rounded-full bg-slate-100">
+              <div id="progressBar" class="h-2 rounded-full bg-brand-600" style="width: 30%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Step Picker -->
+    <section class="grid md:grid-cols-2 gap-8">
+      <!-- Auth Methods -->
+      <div id="auth" class="rounded-2xl border border-slate-200 bg-white p-6 shadow-soft">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-semibold">1) Choose authentication</h2>
+          <div class="flex items-center gap-2">
+            <input id="authFilter" type="text" placeholder="Filter methods…" class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-4 ring-brand-100" />
+          </div>
+        </div>
+
+        <div id="authGrid" class="grid sm:grid-cols-2 gap-4">
+          <!-- Cards injected by JS -->
+        </div>
+      </div>
+
+      <!-- Cloud Services -->
+      <div id="cloud" class="rounded-2xl border border-slate-200 bg-white p-6 shadow-soft">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-semibold">2) Choose cloud service</h2>
+          <div class="flex items-center gap-2">
+            <input id="cloudFilter" type="text" placeholder="Filter services…" class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-4 ring-brand-100" />
+          </div>
+        </div>
+
+        <div id="cloudGrid" class="grid sm:grid-cols-2 gap-4">
+          <!-- Cards injected by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Action Bar -->
+    <section class="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+      <div class="text-sm text-slate-600">Selected: <span id="selectedSummary" class="font-medium text-slate-900">—</span></div>
+      <div class="flex items-center gap-3">
+        <button id="resetBtn" class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm hover:bg-slate-50">Reset</button>
+        <button id="continueBtn" class="rounded-xl bg-brand-600 text-white px-4 py-2 text-sm shadow-soft hover:bg-brand-700">Continue</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed bottom-6 right-6 hidden">
+    <div class="rounded-2xl bg-white border border-slate-200 shadow-soft px-4 py-3">
+      <div class="text-sm font-medium">Launching configuration…</div>
+      <div id="toastBody" class="text-xs text-slate-600 mt-1">Please hold while we load your wizard.</div>
+    </div>
+  </div>
+
+  <footer class="border-t border-slate-200 py-8 text-center text-xs text-slate-500">
+    © <span id="year"></span> Omnigate. For demo purposes only.
+  </footer>
+
+  <script>
+    // ---- Demo Data ----
+    const AUTH_METHODS = [
+      { id: 'oauth', name: 'OAuth 2.0', desc: 'Authorization Code & Client Credentials', badge: 'Popular' },
+      { id: 'oidc', name: 'OpenID Connect', desc: 'Modern identity layer on OAuth 2.0' },
+      { id: 'saml', name: 'SAML 2.0', desc: 'Enterprise SSO for federated login' },
+      { id: 'webauthn', name: 'WebAuthn / Passkeys', desc: 'Phishing-resistant MFA' },
+      { id: 'mtls', name: 'mTLS (x.509)', desc: 'Mutual TLS for services' },
+      { id: 'jwt', name: 'JWT Exchange', desc: 'Signed token handoff / STS' }
+    ]
+
+    const CLOUD_SERVICES = [
+      { id: 'snowflake', name: 'Snowflake', desc: 'Data Cloud', badge: 'Demo' },
+      { id: 'aws', name: 'AWS', desc: 'IAM / STS / Secrets' },
+      { id: 'azure', name: 'Azure', desc: 'Entra ID / Key Vault' },
+      { id: 'gcp', name: 'Google Cloud', desc: 'IAM / Workload Identity' },
+      { id: 'databricks', name: 'Databricks', desc: 'Lakehouse' },
+      { id: 'okta', name: 'Okta', desc: 'IdP / SCIM' },
+      { id: 'ping', name: 'PingFederate', desc: 'IdP / OAuth / SAML' },
+      { id: 'confluent', name: 'Confluent', desc: 'Kafka Cloud' }
+    ]
+
+    let selectedAuth = null
+    let selectedCloud = null
+
+    const authGrid = document.getElementById('authGrid')
+    const cloudGrid = document.getElementById('cloudGrid')
+    const selectedSummary = document.getElementById('selectedSummary')
+    const progressBar = document.getElementById('progressBar')
+    const toast = document.getElementById('toast')
+    const toastBody = document.getElementById('toastBody')
+
+    // Render card helper
+    function renderCard(item, type) {
+      const isSelected = (type === 'auth' ? selectedAuth : selectedCloud) === item.id
+      const card = document.createElement('button')
+      card.type = 'button'
+      card.setAttribute('data-id', item.id)
+      card.className = `group text-left rounded-2xl border ${isSelected ? 'border-brand-600 ring-4 ring-brand-100' : 'border-slate-200'} bg-white p-4 hover:border-brand-500 hover:shadow-soft transition` 
+      card.innerHTML = `
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <div class="text-sm font-semibold">${item.name}</div>
+            <div class="text-xs text-slate-600 mt-1">${item.desc}</div>
+          </div>
+          ${item.badge ? `<span class="text-[10px] px-2 py-1 rounded-full bg-slate-100 text-slate-700">${item.badge}</span>` : ''}
+        </div>`
+      card.addEventListener('click', () => {
+        if (type === 'auth') { selectedAuth = item.id } else { selectedCloud = item.id }
+        updateSelections()
+      })
+      return card
+    }
+
+    function mountCards() {
+      authGrid.innerHTML = ''
+      cloudGrid.innerHTML = ''
+      const af = document.getElementById('authFilter').value.toLowerCase()
+      const cf = document.getElementById('cloudFilter').value.toLowerCase()
+
+      AUTH_METHODS.filter(m => m.name.toLowerCase().includes(af) || m.desc.toLowerCase().includes(af))
+        .forEach(m => authGrid.appendChild(renderCard(m, 'auth')))
+
+      CLOUD_SERVICES.filter(s => s.name.toLowerCase().includes(cf) || s.desc.toLowerCase().includes(cf))
+        .forEach(s => cloudGrid.appendChild(renderCard(s, 'cloud')))
+    }
+
+    function updateSelections() {
+      // Re-render cards to reflect selection borders
+      mountCards()
+      // Update summary & progress
+      const a = selectedAuth ? AUTH_METHODS.find(x => x.id === selectedAuth).name : null
+      const c = selectedCloud ? CLOUD_SERVICES.find(x => x.id === selectedCloud).name : null
+      selectedSummary.textContent = `${a || '—'} × ${c || '—'}`
+      const pct = (selectedAuth ? 0.5 : 0) + (selectedCloud ? 0.5 : 0)
+      progressBar.style.width = `${Math.round(pct * 100)}%`
+    }
+
+    document.getElementById('authFilter').addEventListener('input', mountCards)
+    document.getElementById('cloudFilter').addEventListener('input', mountCards)
+
+    document.getElementById('continueBtn').addEventListener('click', () => {
+      if (!selectedAuth || !selectedCloud) {
+        showToast('Choose an auth method and a cloud service to continue.')
+        return
+      }
+      showToast(`Configuring <b>${AUTH_METHODS.find(x=>x.id===selectedAuth).name}</b> for <b>${CLOUD_SERVICES.find(x=>x.id===selectedCloud).name}</b>…`)
+    })
+
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      selectedAuth = null; selectedCloud = null; updateSelections()
+      showToast('Selections cleared.')
+    })
+
+    // Theme toggle (very simple)
+    const themeBtn = document.getElementById('themeToggle')
+    let dark = false
+    themeBtn.addEventListener('click', () => {
+      dark = !dark
+      document.documentElement.classList.toggle('dark', dark)
+      document.body.classList.toggle('bg-slate-900', dark)
+      document.body.classList.toggle('text-slate-100', dark)
+      themeBtn.textContent = dark ? '☀️' : '🌙'
+    })
+
+    // Toast helpers
+    let toastTimer
+    function showToast(html) {
+      toastBody.innerHTML = html
+      toast.classList.remove('hidden')
+      clearTimeout(toastTimer)
+      toastTimer = setTimeout(() => toast.classList.add('hidden'), 2500)
+    }
+
+    // Init
+    document.getElementById('year').textContent = new Date().getFullYear()
+    mountCards(); updateSelections()
+
+    // Global search shortcut
+    window.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault(); document.getElementById('globalSearch').focus()
+      }
+    })
+  </script>
+</body>
+</html>
