@@ -96,7 +96,7 @@
       80% { opacity: 1; }
       100% { opacity: 0; }
     }
-    .aws-form { margin-top: 0.75rem; }
+    .inline-form { margin-top: 0.75rem; }
   </style>
 </head>
 <body>
@@ -140,14 +140,14 @@
         <div class="service-card">
           <div class="name">Snowflake</div>
           <div class="status" id="status-snowflake">not connected</div>
-          <button class="snowflake-btn" onclick="connectOAuth('snowflake')">Connect Snowflake</button>
+          <button class="snowflake-btn" onclick="connectOAuth('snowflake')">Connect</button>
         </div>
         <!-- AWS -->
         <div class="service-card">
           <div class="name">AWS</div>
           <div class="status" id="status-aws">not connected</div>
-          <button class="aws-btn" onclick="toggleAwsForm()">Connect AWS</button>
-          <div id="aws-form" class="aws-form hidden">
+          <button class="aws-btn" onclick="toggleForm('aws-form')">Connect</button>
+          <div id="aws-form" class="inline-form hidden">
             <div class="field">
               <label>Role ARN</label>
               <input type="text" id="aws-role-arn" placeholder="arn:aws:iam::123456:role/MyRole">
@@ -158,17 +158,35 @@
             </div>
             <div class="field">
               <label>External ID (optional)</label>
-              <input type="text" id="aws-external-id" placeholder="">
+              <input type="text" id="aws-external-id">
             </div>
             <button class="aws-btn" onclick="connectAws()">Assume Role</button>
           </div>
+        </div>
+        <!-- Azure -->
+        <div class="service-card">
+          <div class="name">Azure</div>
+          <div class="status" id="status-azure">not connected</div>
+          <button style="background:#0078d4;" onclick="connectOAuth('azure')">Connect</button>
+        </div>
+        <!-- GCP -->
+        <div class="service-card">
+          <div class="name">Google Cloud</div>
+          <div class="status" id="status-gcp">not connected</div>
+          <button style="background:#4285f4;" onclick="connectOAuth('gcp')">Connect</button>
+        </div>
+        <!-- Databricks -->
+        <div class="service-card">
+          <div class="name">Databricks</div>
+          <div class="status" id="status-databricks">not connected</div>
+          <button style="background:#ff3621;" onclick="connectOAuth('databricks')">Connect</button>
         </div>
         <!-- Bearer -->
         <div class="service-card">
           <div class="name">Bearer (generic)</div>
           <div class="status" id="status-bearer">not connected</div>
-          <button class="secondary" onclick="toggleBearerForm()">Add Token</button>
-          <div id="bearer-form" class="aws-form hidden">
+          <button class="secondary" onclick="toggleForm('bearer-form')">Add Token</button>
+          <div id="bearer-form" class="inline-form hidden">
             <div class="field">
               <label>Token</label>
               <input type="text" id="bearer-token" placeholder="your-api-token">
@@ -194,6 +212,9 @@
             <option value="bearer">Bearer</option>
             <option value="aws">AWS</option>
             <option value="snowflake">Snowflake</option>
+            <option value="azure">Azure</option>
+            <option value="gcp">Google Cloud</option>
+            <option value="databricks">Databricks</option>
           </select>
         </div>
         <div class="field">
@@ -357,7 +378,7 @@ async function loadServiceStatus() {
     if (!res.ok) return;
     const data = await res.json();
     // Reset all
-    ['snowflake', 'aws', 'bearer'].forEach(s => {
+    ['snowflake', 'aws', 'azure', 'gcp', 'databricks', 'bearer'].forEach(s => {
       const el = document.getElementById(`status-${s}`);
       if (el) { el.textContent = 'not connected'; el.style.color = '#737373'; }
     });
@@ -378,12 +399,8 @@ function connectOAuth(service) {
   window.location.href = `${API}/connect/${service}?token=${encodeURIComponent(accessToken)}`;
 }
 
-function toggleAwsForm() {
-  document.getElementById('aws-form').classList.toggle('hidden');
-}
-
-function toggleBearerForm() {
-  document.getElementById('bearer-form').classList.toggle('hidden');
+function toggleForm(id) {
+  document.getElementById(id).classList.toggle('hidden');
 }
 
 async function connectAws() {
