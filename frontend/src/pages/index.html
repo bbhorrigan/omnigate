@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Omnigate</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0a0a; color: #e5e5e5;
+      min-height: 100vh; padding: 2rem;
+    }
+    h1 { font-size: 1.8rem; margin-bottom: 0.25rem; }
+    h1 span { color: #3b82f6; }
+    .subtitle { color: #737373; margin-bottom: 2rem; font-size: 0.95rem; }
+    .container { max-width: 800px; margin: 0 auto; }
+    .card {
+      background: #171717; border: 1px solid #262626; border-radius: 12px;
+      padding: 1.5rem; margin-bottom: 1.25rem;
+    }
+    .card h2 { font-size: 1.1rem; margin-bottom: 1rem; }
+    .status-bar {
+      display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;
+      margin-bottom: 0.5rem; font-size: 0.85rem;
+    }
+    .badge {
+      padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.8rem; font-weight: 500;
+    }
+    .badge-green { background: #052e16; color: #4ade80; border: 1px solid #166534; }
+    .badge-red { background: #2a0a0a; color: #f87171; border: 1px solid #7f1d1d; }
+    .badge-yellow { background: #2a2000; color: #facc15; border: 1px solid #854d0e; }
+    .badge-blue { background: #0a1a2e; color: #60a5fa; border: 1px solid #1e40af; }
+    button {
+      background: #3b82f6; color: white; border: none; padding: 0.6rem 1.25rem;
+      border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 500;
+      transition: background 0.15s;
+    }
+    button:hover { background: #2563eb; }
+    button:disabled { background: #333; color: #666; cursor: not-allowed; }
+    button.secondary { background: #262626; color: #e5e5e5; }
+    button.secondary:hover { background: #333; }
+    button.danger { background: #991b1b; }
+    button.danger:hover { background: #b91c1c; }
+    button.snowflake-btn { background: #29b5e8; }
+    button.snowflake-btn:hover { background: #1a9fd4; }
+    button.aws-btn { background: #ff9900; color: #0a0a0a; }
+    button.aws-btn:hover { background: #e68a00; }
+    .btn-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    input, select, textarea {
+      background: #0a0a0a; border: 1px solid #333; color: #e5e5e5;
+      padding: 0.5rem 0.75rem; border-radius: 8px; font-size: 0.9rem;
+      width: 100%; font-family: inherit;
+    }
+    textarea { min-height: 80px; resize: vertical; font-family: monospace; font-size: 0.8rem; }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: #3b82f6; }
+    label { display: block; font-size: 0.85rem; color: #a3a3a3; margin-bottom: 0.35rem; }
+    .field { margin-bottom: 1rem; }
+    .output {
+      background: #0a0a0a; border: 1px solid #262626; border-radius: 8px;
+      padding: 1rem; font-family: monospace; font-size: 0.8rem;
+      white-space: pre-wrap; word-break: break-all; max-height: 400px;
+      overflow-y: auto; margin-top: 0.75rem; color: #a3a3a3;
+    }
+    .output.success { border-color: #166534; }
+    .output.error { border-color: #7f1d1d; }
+    .row { display: flex; gap: 0.75rem; }
+    .row > * { flex: 1; }
+    .hidden { display: none; }
+    hr { border: none; border-top: 1px solid #262626; margin: 0.75rem 0; }
+    .token-display {
+      font-family: monospace; font-size: 0.75rem; color: #737373;
+      word-break: break-all; padding: 0.5rem; background: #0a0a0a;
+      border-radius: 6px; margin-top: 0.5rem;
+    }
+    .service-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 0.75rem; margin-bottom: 1rem;
+    }
+    .service-card {
+      background: #0a0a0a; border: 1px solid #262626; border-radius: 8px;
+      padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem;
+    }
+    .service-card .name { font-weight: 600; font-size: 0.95rem; }
+    .service-card .status { font-size: 0.8rem; color: #737373; }
+    .toast {
+      position: fixed; top: 1rem; right: 1rem; padding: 0.75rem 1.25rem;
+      border-radius: 8px; font-size: 0.9rem; z-index: 100;
+      animation: fadeInOut 3s ease forwards;
+    }
+    .toast-success { background: #052e16; color: #4ade80; border: 1px solid #166534; }
+    .toast-error { background: #2a0a0a; color: #f87171; border: 1px solid #7f1d1d; }
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translateY(-10px); }
+      10% { opacity: 1; transform: translateY(0); }
+      80% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+    .aws-form { margin-top: 0.75rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1><span>Omnigate</span></h1>
+    <p class="subtitle">Authenticate once, access everything.</p>
+
+    <!-- Status -->
+    <div class="card">
+      <div class="status-bar">
+        <span>Server:</span>
+        <span id="server-status" class="badge badge-yellow">checking...</span>
+        <span>Auth:</span>
+        <span id="auth-status" class="badge badge-red">not logged in</span>
+      </div>
+    </div>
+
+    <!-- Auth -->
+    <div class="card" id="auth-card">
+      <h2>1. Authenticate</h2>
+      <div class="btn-row">
+        <button onclick="loginGithub()">Sign in with GitHub</button>
+      </div>
+      <div id="user-info" class="hidden" style="margin-top:1rem;">
+        <div class="status-bar">
+          <span id="user-email" class="badge badge-blue"></span>
+          <button class="danger" onclick="logout()" style="margin-left:auto;padding:0.35rem 0.75rem;font-size:0.8rem;">Logout</button>
+        </div>
+        <div class="token-display" id="token-display"></div>
+      </div>
+    </div>
+
+    <!-- Connect Services -->
+    <div class="card" id="connect-card">
+      <h2>2. Connect Services</h2>
+      <p style="color:#737373;font-size:0.85rem;margin-bottom:1rem;">
+        Connect to downstream services via OAuth or provide credentials. Omnigate handles auth on your behalf.
+      </p>
+      <div class="service-grid" id="service-grid">
+        <!-- Snowflake -->
+        <div class="service-card">
+          <div class="name">Snowflake</div>
+          <div class="status" id="status-snowflake">not connected</div>
+          <button class="snowflake-btn" onclick="connectOAuth('snowflake')">Connect Snowflake</button>
+        </div>
+        <!-- AWS -->
+        <div class="service-card">
+          <div class="name">AWS</div>
+          <div class="status" id="status-aws">not connected</div>
+          <button class="aws-btn" onclick="toggleAwsForm()">Connect AWS</button>
+          <div id="aws-form" class="aws-form hidden">
+            <div class="field">
+              <label>Role ARN</label>
+              <input type="text" id="aws-role-arn" placeholder="arn:aws:iam::123456:role/MyRole">
+            </div>
+            <div class="field">
+              <label>Region</label>
+              <input type="text" id="aws-region" value="us-east-1">
+            </div>
+            <div class="field">
+              <label>External ID (optional)</label>
+              <input type="text" id="aws-external-id" placeholder="">
+            </div>
+            <button class="aws-btn" onclick="connectAws()">Assume Role</button>
+          </div>
+        </div>
+        <!-- Bearer -->
+        <div class="service-card">
+          <div class="name">Bearer (generic)</div>
+          <div class="status" id="status-bearer">not connected</div>
+          <button class="secondary" onclick="toggleBearerForm()">Add Token</button>
+          <div id="bearer-form" class="aws-form hidden">
+            <div class="field">
+              <label>Token</label>
+              <input type="text" id="bearer-token" placeholder="your-api-token">
+            </div>
+            <div class="field">
+              <label>Base URL</label>
+              <input type="text" id="bearer-base-url" value="https://httpbin.org">
+            </div>
+            <button onclick="connectBearer()">Save</button>
+          </div>
+        </div>
+      </div>
+      <div id="connect-output" class="output hidden"></div>
+    </div>
+
+    <!-- Proxy -->
+    <div class="card" id="proxy-card">
+      <h2>3. Proxy Request</h2>
+      <div class="row">
+        <div class="field">
+          <label>Service</label>
+          <select id="proxy-service">
+            <option value="bearer">Bearer</option>
+            <option value="aws">AWS</option>
+            <option value="snowflake">Snowflake</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Method</label>
+          <select id="proxy-method">
+            <option value="GET">GET</option>
+            <option value="POST">POST</option>
+            <option value="PUT">PUT</option>
+            <option value="DELETE">DELETE</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Path (after /proxy/service/)</label>
+        <input type="text" id="proxy-path" placeholder="e.g. get, headers, s3/my-bucket" value="get">
+      </div>
+      <div class="field">
+        <label>Body (for POST/PUT)</label>
+        <textarea id="proxy-body" placeholder="Optional JSON body"></textarea>
+      </div>
+      <button onclick="sendProxy()">Send Proxied Request</button>
+      <div id="proxy-output" class="output hidden"></div>
+    </div>
+  </div>
+
+<script>
+const API = window.location.origin;
+let accessToken = localStorage.getItem('omnigate_access_token');
+let refreshToken = localStorage.getItem('omnigate_refresh_token');
+
+// On load
+checkHealth();
+if (accessToken) verifyAuth();
+
+// Check for OAuth callback tokens in URL
+const params = new URLSearchParams(window.location.search);
+if (params.get('accessToken')) {
+  accessToken = params.get('accessToken');
+  refreshToken = params.get('refreshToken');
+  localStorage.setItem('omnigate_access_token', accessToken);
+  localStorage.setItem('omnigate_refresh_token', refreshToken);
+  window.history.replaceState({}, '', '/');
+  verifyAuth();
+}
+// Check for connector callback
+if (params.get('connected')) {
+  showToast(`Connected to ${params.get('connected')}!`, 'success');
+  window.history.replaceState({}, '', '/');
+  loadServiceStatus();
+}
+if (params.get('error')) {
+  const detail = params.get('detail') || params.get('error');
+  showToast(`Connection failed: ${detail}`, 'error');
+  window.history.replaceState({}, '', '/');
+}
+
+function showToast(msg, type) {
+  const el = document.createElement('div');
+  el.className = `toast toast-${type}`;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3200);
+}
+
+async function checkHealth() {
+  try {
+    const res = await fetch(`${API}/health`);
+    const data = await res.json();
+    const el = document.getElementById('server-status');
+    if (data.status === 'OK') {
+      el.textContent = `healthy (db: ${data.db ? 'ok' : 'down'}, redis: ${data.redis ? 'ok' : 'down'})`;
+      el.className = 'badge badge-green';
+    } else {
+      el.textContent = 'unhealthy';
+      el.className = 'badge badge-red';
+    }
+  } catch {
+    document.getElementById('server-status').textContent = 'unreachable';
+    document.getElementById('server-status').className = 'badge badge-red';
+  }
+}
+
+function loginGithub() {
+  window.location.href = `${API}/auth/github`;
+}
+
+async function verifyAuth() {
+  if (!accessToken) return;
+  try {
+    const res = await fetch(`${API}/auth/me`, {
+      headers: { 'Authorization': `Bearer ${accessToken}` }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      document.getElementById('auth-status').textContent = data.email;
+      document.getElementById('auth-status').className = 'badge badge-green';
+      document.getElementById('user-info').classList.remove('hidden');
+      document.getElementById('user-email').textContent = data.email;
+      document.getElementById('token-display').textContent = 'Token: ' + accessToken.slice(0, 30) + '...';
+      loadServiceStatus();
+    } else if (res.status === 401 && refreshToken) {
+      await doRefresh();
+    } else {
+      logout();
+    }
+  } catch {
+    document.getElementById('auth-status').textContent = 'error';
+    document.getElementById('auth-status').className = 'badge badge-red';
+  }
+}
+
+async function doRefresh() {
+  try {
+    const res = await fetch(`${API}/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      accessToken = data.accessToken;
+      refreshToken = data.refreshToken;
+      localStorage.setItem('omnigate_access_token', accessToken);
+      localStorage.setItem('omnigate_refresh_token', refreshToken);
+      await verifyAuth();
+    } else {
+      logout();
+    }
+  } catch {
+    logout();
+  }
+}
+
+function logout() {
+  accessToken = null;
+  refreshToken = null;
+  localStorage.removeItem('omnigate_access_token');
+  localStorage.removeItem('omnigate_refresh_token');
+  document.getElementById('auth-status').textContent = 'not logged in';
+  document.getElementById('auth-status').className = 'badge badge-red';
+  document.getElementById('user-info').classList.add('hidden');
+}
+
+function authHeaders() {
+  return { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' };
+}
+
+function showOutput(elId, data, ok) {
+  const el = document.getElementById(elId);
+  el.classList.remove('hidden', 'success', 'error');
+  el.classList.add(ok ? 'success' : 'error');
+  el.textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+}
+
+// --- Connect Services ---
+
+async function loadServiceStatus() {
+  if (!accessToken) return;
+  try {
+    const res = await fetch(`${API}/credentials`, { headers: authHeaders() });
+    if (!res.ok) return;
+    const data = await res.json();
+    // Reset all
+    ['snowflake', 'aws', 'bearer'].forEach(s => {
+      const el = document.getElementById(`status-${s}`);
+      if (el) { el.textContent = 'not connected'; el.style.color = '#737373'; }
+    });
+    // Mark connected
+    data.services.forEach(s => {
+      const el = document.getElementById(`status-${s.service}`);
+      if (el) {
+        el.textContent = `connected (${new Date(s.updatedAt).toLocaleDateString()})`;
+        el.style.color = '#4ade80';
+      }
+    });
+  } catch {}
+}
+
+function connectOAuth(service) {
+  if (!accessToken) return showToast('Log in first', 'error');
+  // Redirect to connector OAuth flow, passing JWT as query param for the auth middleware
+  window.location.href = `${API}/connect/${service}?token=${encodeURIComponent(accessToken)}`;
+}
+
+function toggleAwsForm() {
+  document.getElementById('aws-form').classList.toggle('hidden');
+}
+
+function toggleBearerForm() {
+  document.getElementById('bearer-form').classList.toggle('hidden');
+}
+
+async function connectAws() {
+  const roleArn = document.getElementById('aws-role-arn').value;
+  const region = document.getElementById('aws-region').value;
+  const externalId = document.getElementById('aws-external-id').value;
+  if (!roleArn) return showOutput('connect-output', 'Role ARN is required', false);
+
+  try {
+    const res = await fetch(`${API}/connect/aws`, {
+      method: 'POST', headers: authHeaders(),
+      body: JSON.stringify({ roleArn, region, externalId: externalId || undefined })
+    });
+    const data = await res.json();
+    showOutput('connect-output', data, res.ok);
+    if (res.ok) { loadServiceStatus(); showToast('Connected to AWS!', 'success'); }
+  } catch (e) { showOutput('connect-output', 'Request failed: ' + e, false); }
+}
+
+async function connectBearer() {
+  const token = document.getElementById('bearer-token').value;
+  const baseUrl = document.getElementById('bearer-base-url').value;
+  if (!token) return showOutput('connect-output', 'Token is required', false);
+
+  try {
+    const res = await fetch(`${API}/credentials`, {
+      method: 'POST', headers: authHeaders(),
+      body: JSON.stringify({ service: 'bearer', credentials: { token, baseUrl } })
+    });
+    const data = await res.json();
+    showOutput('connect-output', data, res.ok);
+    if (res.ok) { loadServiceStatus(); showToast('Bearer token saved!', 'success'); }
+  } catch (e) { showOutput('connect-output', 'Request failed: ' + e, false); }
+}
+
+// --- Proxy ---
+
+async function sendProxy() {
+  const service = document.getElementById('proxy-service').value;
+  const method = document.getElementById('proxy-method').value;
+  const path = document.getElementById('proxy-path').value;
+  const body = document.getElementById('proxy-body').value;
+
+  const opts = { method, headers: authHeaders() };
+  if (['POST', 'PUT'].includes(method) && body) opts.body = body;
+
+  try {
+    const res = await fetch(`${API}/proxy/${service}/${path}`, opts);
+    let data;
+    const ct = res.headers.get('content-type') || '';
+    if (ct.includes('json')) { data = await res.json(); }
+    else { data = await res.text(); }
+    showOutput('proxy-output', data, res.ok);
+  } catch (e) { showOutput('proxy-output', 'Request failed: ' + e, false); }
+}
+</script>
+</body>
+</html>

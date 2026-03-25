@@ -1,11 +1,13 @@
 import { Router, Request, Response } from 'express';
 import { requireAuth, AuthenticatedRequest } from '../middleware';
 import { CredentialService } from './credential.service';
+import { RefreshService } from '../connectors/refresh.service';
 import { getAdapter, listAdapters } from './adapters';
 import { ProxyRequestConfig } from './adapters/types';
 
 const router = Router();
 const credentialService = new CredentialService();
+const refreshService = new RefreshService();
 
 // All proxy routes require auth
 router.use(requireAuth);
@@ -32,7 +34,7 @@ router.get('/', (_req: Request, res: Response) => {
 router.all('/:service/*', async (req: Request, res: Response) => {
   const { service } = req.params;
   const remainingPath = (req.params as any)[0] || '';
-  const { sub: userId } = (req as AuthenticatedRequest).tokenPayload;
+  const { sub: userId, email } = (req as AuthenticatedRequest).tokenPayload;
 
   // 1. Find adapter
   const adapter = getAdapter(service);
@@ -56,9 +58,16 @@ router.all('/:service/*', async (req: Request, res: Response) => {
   if (!credentials) {
     res.status(403).json({
       error: `No credentials configured for service: ${service}`,
-      hint: 'Store credentials via POST /credentials first.',
+      hint: 'Connect via /connect/:service or store credentials via POST /credentials.',
     });
     return;
+  }
+
+  // 2b. Auto-refresh if expired
+  try {
+    credentials = await refreshService.ensureFresh(userId, email, service, credentials);
+  } catch (_) {
+    // Non-fatal — proceed with possibly stale credentials
   }
 
   // 3. Build outgoing request

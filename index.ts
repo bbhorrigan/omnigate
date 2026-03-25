@@ -1,4 +1,5 @@
 import express from 'express';
+import path from 'path';
 import passport from 'passport';
 import { Strategy as GitHubStrategy } from 'passport-github2';
 import { Strategy as OidcStrategy } from 'passport-openidconnect';
@@ -9,10 +10,14 @@ import { redisClient } from './cache';
 import { signAccessToken, createRefreshToken, consumeRefreshToken } from './jwt';
 import { requireAuth, AuthenticatedRequest } from './middleware';
 import { proxyRouter } from './proxy/proxy.router';
+import { connectRouter } from './connectors/connect.router';
 
 const app = express();
 app.use(express.json());
 app.use(passport.initialize());
+
+// Serve frontend
+app.use(express.static(path.join(__dirname, '..', 'frontend', 'src', 'pages')));
 
 // Initialize dependencies
 Promise.all([initDB(), initRedis()])
@@ -47,16 +52,17 @@ Promise.all([initDB(), initRedis()])
     app.get('/auth/github', passport.authenticate('github', { scope: ['user:email'] }));
 
     app.get('/auth/github/callback',
-      passport.authenticate('github', { session: false, failureRedirect: '/login' }),
+      passport.authenticate('github', { session: false, failureRedirect: '/?error=auth_failed' }),
       async (req: any, res: any) => {
         try {
           const { id, email } = req.user;
           const accessToken = signAccessToken({ sub: id, email });
           const refreshToken = await createRefreshToken(id);
-          res.json({ accessToken, refreshToken });
+          // Redirect to frontend with tokens
+          res.redirect(`/?accessToken=${encodeURIComponent(accessToken)}&refreshToken=${encodeURIComponent(refreshToken)}`);
         } catch (error) {
           console.error('Token issuance failed:', error);
-          res.status(500).json({ error: 'Failed to issue tokens' });
+          res.redirect('/?error=token_failed');
         }
       }
     );
@@ -165,6 +171,9 @@ Promise.all([initDB(), initRedis()])
         res.status(500).json({ error: error.message });
       }
     });
+
+    // Connectors — OAuth/STS flows for downstream services
+    app.use('/connect', connectRouter);
 
     // Proxy — authenticate once, access everything
     app.use('/proxy', proxyRouter);
