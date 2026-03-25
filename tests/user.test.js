@@ -1,8 +1,11 @@
 const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
+const { User } = require('../dist/user.js');
 
-describe('sample test', () => {
-  it('adds numbers', () => {
-    assert.strictEqual(1 + 1, 2);
+describe('User entity', () => {
+  it('can be instantiated', () => {
+    const user = new User();
+    user.email = 'test@example.com';
+    assert.equal(user.email, 'test@example.com');
   });
 });

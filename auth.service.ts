@@ -103,4 +103,8 @@ export class AuthService {
 
     return { success: true, userId };
   }
+
+  async getUserById(id: string): Promise<User | null> {
+    return this.userRepo.findOne({ where: { id } });
+  }
 }

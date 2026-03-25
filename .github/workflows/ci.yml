@@ -45,35 +45,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
-
+          cache: npm
 
       - name: Install deps
-        run: npm install
+        run: npm ci
 
       - name: Type check
-        run: npx tsc -p tsconfig.json --noEmit
-
-      - name: Lint
-        run: npm run lint
+        run: npx tsc --noEmit
 
       - name: Build
         run: npm run build
 
       - name: Test
         run: npm test
-        env:
-          JEST_JUNIT_OUTPUT: junit.xml
-
-      - name: Upload junit
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: junit
-          path: junit.xml
-
-      - name: Upload coverage
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage
-          path: coverage

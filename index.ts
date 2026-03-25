@@ -1,10 +1,13 @@
 import express from 'express';
 import passport from 'passport';
 import { Strategy as GitHubStrategy } from 'passport-github2';
+import { Strategy as OidcStrategy } from 'passport-openidconnect';
 import { initDB, AppDataSource } from './db';
 import { initRedis } from './cache';
 import { AuthService } from './auth.service';
 import { redisClient } from './cache';
+import { signAccessToken, createRefreshToken, consumeRefreshToken } from './jwt';
+import { requireAuth, AuthenticatedRequest } from './middleware';
 
 const app = express();
 app.use(express.json());
@@ -14,7 +17,7 @@ app.use(passport.initialize());
 Promise.all([initDB(), initRedis()])
   .then(() => {
     console.log('Dependencies initialized');
-    
+
     const authService = new AuthService();
 
     // Configure GitHub Strategy
@@ -32,8 +35,8 @@ Promise.all([initDB(), initRedis()])
           'github',
           { accessToken, refreshToken }
         );
-        
-        done(null, { id: result.userId });
+
+        done(null, { id: result.userId, email });
       } catch (error) {
         done(error);
       }
@@ -41,13 +44,98 @@ Promise.all([initDB(), initRedis()])
 
     // Routes
     app.get('/auth/github', passport.authenticate('github', { scope: ['user:email'] }));
-    
+
     app.get('/auth/github/callback',
-      passport.authenticate('github', { failureRedirect: '/login' }),
-      (req: any, res: any) => {
-        res.json({ success: true, userId: (req.user as any).id });
+      passport.authenticate('github', { session: false, failureRedirect: '/login' }),
+      async (req: any, res: any) => {
+        try {
+          const { id, email } = req.user;
+          const accessToken = signAccessToken({ sub: id, email });
+          const refreshToken = await createRefreshToken(id);
+          res.json({ accessToken, refreshToken });
+        } catch (error) {
+          console.error('Token issuance failed:', error);
+          res.status(500).json({ error: 'Failed to issue tokens' });
+        }
       }
     );
+
+    // Configure OIDC Strategy (generic — works with any OIDC provider: Okta, Auth0, Azure AD, etc.)
+    if (process.env.OIDC_ISSUER) {
+      passport.use('oidc', new OidcStrategy({
+        issuer: process.env.OIDC_ISSUER,
+        authorizationURL: process.env.OIDC_AUTHORIZATION_URL || `${process.env.OIDC_ISSUER}/authorize`,
+        tokenURL: process.env.OIDC_TOKEN_URL || `${process.env.OIDC_ISSUER}/oauth/token`,
+        userInfoURL: process.env.OIDC_USERINFO_URL || `${process.env.OIDC_ISSUER}/userinfo`,
+        clientID: process.env.OIDC_CLIENT_ID || '',
+        clientSecret: process.env.OIDC_CLIENT_SECRET || '',
+        callbackURL: process.env.OIDC_CALLBACK_URL || '/auth/oidc/callback',
+        scope: process.env.OIDC_SCOPES || 'openid profile email',
+      }, async (issuer: string, profile: any, done: any) => {
+        try {
+          const email = profile.emails?.[0]?.value || profile._json?.email;
+          if (!email) return done(new Error('No email found in OIDC profile'));
+
+          const result = await authService.handleAuth(
+            email,
+            'oidc',
+            { issuer, oidcId: profile.id }
+          );
+
+          done(null, { id: result.userId, email });
+        } catch (error) {
+          done(error);
+        }
+      }));
+
+      app.get('/auth/oidc', passport.authenticate('oidc'));
+
+      app.get('/auth/oidc/callback',
+        passport.authenticate('oidc', { session: false, failureRedirect: '/login' }),
+        async (req: any, res: any) => {
+          try {
+            const { id, email } = req.user;
+            const accessToken = signAccessToken({ sub: id, email });
+            const refreshToken = await createRefreshToken(id);
+            res.json({ accessToken, refreshToken });
+          } catch (error) {
+            console.error('OIDC token issuance failed:', error);
+            res.status(500).json({ error: 'Failed to issue tokens' });
+          }
+        }
+      );
+
+      console.log(`OIDC provider configured: ${process.env.OIDC_ISSUER}`);
+    }
+
+    // Exchange a refresh token for a new access + refresh token pair
+    app.post('/auth/refresh', async (req: any, res: any) => {
+      const { refreshToken } = req.body;
+      if (!refreshToken) {
+        return res.status(400).json({ error: 'refreshToken is required' });
+      }
+
+      const userId = await consumeRefreshToken(refreshToken);
+      if (!userId) {
+        return res.status(401).json({ error: 'Invalid or expired refresh token' });
+      }
+
+      // Look up user to get email for the new access token
+      const user = await authService.getUserById(userId);
+      if (!user) {
+        return res.status(401).json({ error: 'User not found' });
+      }
+
+      const newAccessToken = signAccessToken({ sub: userId, email: user.email });
+      const newRefreshToken = await createRefreshToken(userId);
+      res.json({ accessToken: newAccessToken, refreshToken: newRefreshToken });
+    });
+
+    // Protected route — verifies the caller has a valid access token
+    app.get('/auth/me', requireAuth, (req: any, res: any) => {
+      const { sub, email } = (req as AuthenticatedRequest).tokenPayload;
+      res.json({ userId: sub, email });
+    });
 
     app.get('/health', (_: any, res: any) => {
       res.json({
