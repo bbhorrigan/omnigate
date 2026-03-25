@@ -3,13 +3,16 @@ import {
   PrimaryGeneratedColumn,
   Column,
   ManyToOne,
+  JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
   Index,
+  Unique,
 } from 'typeorm';
 import { User } from './user';
 
 @Entity({ name: 'saas_mappings' })
+@Unique(['userId', 'saasType'])
 export class SaaSMapping {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
@@ -21,9 +24,13 @@ export class SaaSMapping {
   @Column({ type: 'jsonb', nullable: false })
   credentials!: Record<string, any>;
 
+  @Column()
+  userId!: string;
+
   @ManyToOne(() => User, (user: User) => user.saasMappings, {
-    onDelete: 'CASCADE', // Remove mappings if user is deleted
+    onDelete: 'CASCADE',
   })
+  @JoinColumn({ name: 'userId' })
   user!: User;
 
   @CreateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })

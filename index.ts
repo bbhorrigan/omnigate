@@ -8,6 +8,7 @@ import { AuthService } from './auth.service';
 import { redisClient } from './cache';
 import { signAccessToken, createRefreshToken, consumeRefreshToken } from './jwt';
 import { requireAuth, AuthenticatedRequest } from './middleware';
+import { proxyRouter } from './proxy/proxy.router';
 
 const app = express();
 app.use(express.json());
@@ -136,6 +137,37 @@ Promise.all([initDB(), initRedis()])
       const { sub, email } = (req as AuthenticatedRequest).tokenPayload;
       res.json({ userId: sub, email });
     });
+
+    // Store credentials for a service (authenticated)
+    app.post('/credentials', requireAuth, async (req: any, res: any) => {
+      const { sub: userId, email } = (req as AuthenticatedRequest).tokenPayload;
+      const { service, credentials } = req.body;
+
+      if (!service || !credentials) {
+        return res.status(400).json({ error: 'service and credentials are required' });
+      }
+
+      try {
+        await authService.handleAuth(email, service, credentials);
+        res.json({ success: true, service });
+      } catch (error: any) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // List stored credential mappings (authenticated)
+    app.get('/credentials', requireAuth, async (req: any, res: any) => {
+      const { sub: userId } = (req as AuthenticatedRequest).tokenPayload;
+      try {
+        const mappings = await authService.getUserMappings(userId);
+        res.json({ services: mappings.map(m => ({ service: m.saasType, updatedAt: m.updatedAt })) });
+      } catch (error: any) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Proxy — authenticate once, access everything
+    app.use('/proxy', proxyRouter);
 
     app.get('/health', (_: any, res: any) => {
       res.json({

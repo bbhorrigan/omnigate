@@ -38,7 +38,7 @@ export class AuthService {
     // NB: conflictPaths should reference actual columns. If your join column is "userId", use that.
     return this.mappingRepo.upsert(
       {
-        user: { id: user.id } as User, // minimal relation reference
+        userId: user.id, // minimal relation reference
         saasType,
         credentials: credentials as any,
       },
@@ -76,7 +76,7 @@ export class AuthService {
       // Upsert mapping
       await mappingRepo.upsert(
         {
-          user: { id: user.id } as User,
+          userId: user.id,
           saasType,
           credentials: credentials as any,
         },
@@ -106,5 +106,12 @@ export class AuthService {
 
   async getUserById(id: string): Promise<User | null> {
     return this.userRepo.findOne({ where: { id } });
+  }
+
+  async getUserMappings(userId: string): Promise<SaaSMapping[]> {
+    return this.mappingRepo.find({
+      where: { user: { id: userId } },
+      select: ['saasType', 'updatedAt'],
+    });
   }
 }
