@@ -1,0 +1,184 @@
+# =============================================================================
+# Omnigate Helm Values
+# =============================================================================
+
+# -- Number of replicas
+replicaCount: 2
+
+# -- Container image configuration
+image:
+  repository: omnigate
+  tag: "1.2.0"
+  pullPolicy: IfNotPresent
+
+# -- Image pull secrets (if using a private registry)
+imagePullSecrets: []
+
+# -- Override the chart name
+nameOverride: ""
+fullnameOverride: ""
+
+# =============================================================================
+# Application Configuration
+# =============================================================================
+
+# -- Node environment
+nodeEnv: production
+
+# -- Server port
+port: 3000
+
+# -- Log level (debug, info, warn, error)
+logLevel: info
+
+# =============================================================================
+# PostgreSQL
+# =============================================================================
+postgresql:
+  host: "postgresql"
+  port: 5432
+  database: "omnigate"
+  # -- Use an existing secret for PostgreSQL credentials.
+  # The secret must contain keys: POSTGRES_USER, POSTGRES_PASSWORD
+  existingSecret: ""
+  # -- Only used if existingSecret is empty (stored in generated secret)
+  username: "omnigate"
+  password: ""
+
+# =============================================================================
+# Redis
+# =============================================================================
+redis:
+  url: "redis://redis:6379"
+  # -- Use an existing secret containing key: REDIS_URL
+  existingSecret: ""
+
+# =============================================================================
+# JWT
+# =============================================================================
+jwt:
+  # -- Use an existing secret containing key: JWT_SECRET
+  existingSecret: ""
+  # -- Only used if existingSecret is empty
+  secret: ""
+
+# =============================================================================
+# Encryption Key
+# =============================================================================
+encryption:
+  # -- Use an existing secret containing key: ENCRYPTION_KEY
+  existingSecret: ""
+  # -- Only used if existingSecret is empty
+  key: ""
+
+# =============================================================================
+# GitHub OAuth
+# =============================================================================
+github:
+  # -- Use an existing secret containing keys: GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET
+  existingSecret: ""
+  clientId: ""
+  clientSecret: ""
+
+# =============================================================================
+# Optional: OIDC Configuration
+# =============================================================================
+oidc:
+  enabled: false
+  issuerUrl: ""
+  clientId: ""
+  clientSecret: ""
+  # -- Use an existing secret containing keys: OIDC_CLIENT_ID, OIDC_CLIENT_SECRET
+  existingSecret: ""
+
+# =============================================================================
+# Optional: Snowflake Configuration
+# =============================================================================
+snowflake:
+  enabled: false
+  account: ""
+  username: ""
+  # -- Use an existing secret containing key: SNOWFLAKE_PRIVATE_KEY
+  existingSecret: ""
+
+# =============================================================================
+# Optional: Azure Configuration
+# =============================================================================
+azure:
+  enabled: false
+  tenantId: ""
+  clientId: ""
+  # -- Use an existing secret containing key: AZURE_CLIENT_SECRET
+  existingSecret: ""
+
+# =============================================================================
+# Optional: GCP Configuration
+# =============================================================================
+gcp:
+  enabled: false
+  projectId: ""
+  # -- Use an existing secret containing key: GCP_SERVICE_ACCOUNT_KEY
+  existingSecret: ""
+
+# =============================================================================
+# Optional: Databricks Configuration
+# =============================================================================
+databricks:
+  enabled: false
+  host: ""
+  # -- Use an existing secret containing key: DATABRICKS_TOKEN
+  existingSecret: ""
+
+# =============================================================================
+# Kubernetes Service
+# =============================================================================
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 3000
+
+# =============================================================================
+# Ingress
+# =============================================================================
+ingress:
+  enabled: false
+  className: "nginx"
+  annotations: {}
+    # cert-manager.io/cluster-issuer: letsencrypt-prod
+  host: "omnigate.example.com"
+  tls:
+    enabled: false
+    secretName: "omnigate-tls"
+
+# =============================================================================
+# Resources
+# =============================================================================
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+# =============================================================================
+# Health Checks
+# =============================================================================
+healthCheck:
+  path: /health
+  initialDelaySeconds: 10
+  periodSeconds: 15
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+# =============================================================================
+# Pod configuration
+# =============================================================================
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""

@@ -5,6 +5,7 @@ import { DataSource, DataSourceOptions } from 'typeorm';
 // entity files in the repository root. Adjust imports accordingly.
 import { User } from './user';
 import { SaaSMapping } from './SaaSMapping';
+import { AuditLog } from './audit';
 
 const toInt = (v: string | undefined, def: number) =>
   Number.isFinite(Number(v)) ? parseInt(String(v!), 10) : def;
@@ -31,7 +32,7 @@ const baseOptions: DataSourceOptions = dbUrl
 
 const options: DataSourceOptions = {
   ...baseOptions,
-  entities: [User, SaaSMapping],
+  entities: [User, SaaSMapping, AuditLog],
   // In prod, never use synchronize; use migrations instead.
   synchronize: bool(process.env.DB_SYNCHRONIZE, !isProd),
   // Logging defaults: errors/warnings in prod, more in dev if needed

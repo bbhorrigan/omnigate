@@ -1,0 +1,11 @@
+apiVersion: v2
+name: omnigate
+description: A Helm chart for deploying Omnigate — API gateway with multi-provider support
+type: application
+version: 0.1.0
+appVersion: "1.2.0"
+maintainers:
+  - name: omnigate-team
+keywords:
+  - api-gateway
+  - omnigate

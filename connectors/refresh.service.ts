@@ -1,5 +1,6 @@
 import { AuthService } from '../auth.service';
 import { getConnector } from './index';
+import { decryptCredentials } from '../crypto';
 
 const REFRESH_BUFFER_MS = 5 * 60 * 1000; // refresh 5 minutes before expiry
 
@@ -16,33 +17,36 @@ export class RefreshService {
     serviceType: string,
     credentials: Record<string, any>
   ): Promise<Record<string, any>> {
-    // If no expiry info, pass through
-    if (!credentials.expiresAt) return credentials;
+    // Decrypt if needed (handles both encrypted and legacy plaintext)
+    const decrypted = decryptCredentials(credentials);
 
-    const expiresAt = new Date(credentials.expiresAt);
+    // If no expiry info, pass through
+    if (!decrypted.expiresAt) return decrypted;
+
+    const expiresAt = new Date(decrypted.expiresAt);
     const now = new Date();
 
     // Not expired yet (with buffer)
     if (expiresAt.getTime() - now.getTime() > REFRESH_BUFFER_MS) {
-      return credentials;
+      return decrypted;
     }
 
     // Try to refresh
     const connector = getConnector(serviceType);
-    if (!connector?.supportsRefresh) return credentials;
+    if (!connector?.supportsRefresh) return decrypted;
 
     try {
-      const result = await connector.refreshCredentials(credentials);
-      if (!result) return credentials;
+      const result = await connector.refreshCredentials(decrypted);
+      if (!result) return decrypted;
 
-      // Store refreshed credentials
+      // Store refreshed credentials (handleAuth will encrypt them)
       await this.authService.handleAuth(email, serviceType, result.credentials);
       console.log(`Refreshed ${serviceType} credentials for user ${userId}`);
       return result.credentials;
     } catch (err) {
       console.error(`Failed to refresh ${serviceType} credentials:`, err);
       // Return stale credentials — let the downstream service reject if truly expired
-      return credentials;
+      return decrypted;
     }
   }
 }

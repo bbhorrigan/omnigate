@@ -4,10 +4,12 @@ import { CredentialService } from './credential.service';
 import { RefreshService } from '../connectors/refresh.service';
 import { getAdapter, listAdapters } from './adapters';
 import { ProxyRequestConfig } from './adapters/types';
+import { AuditService } from '../audit.service';
 
 const router = Router();
 const credentialService = new CredentialService();
 const refreshService = new RefreshService();
+const auditService = new AuditService();
 
 // All proxy routes require auth
 router.use(requireAuth);
@@ -118,8 +120,30 @@ router.all('/:service/*', async (req: Request, res: Response) => {
     });
     const responseBody = Buffer.from(await response.arrayBuffer());
     res.send(responseBody);
+
+    // Best-effort audit log
+    auditService.log({
+      userId,
+      action: 'proxy',
+      service,
+      method: req.method,
+      path: remainingPath,
+      statusCode: response.status,
+      ipAddress: req.ip || null,
+    });
   } catch (err) {
     res.status(502).json({ error: 'Failed to reach downstream service', detail: String(err) });
+
+    // Best-effort audit log
+    auditService.log({
+      userId,
+      action: 'proxy',
+      service,
+      method: req.method,
+      path: remainingPath,
+      statusCode: 502,
+      ipAddress: req.ip || null,
+    });
   }
 });
 

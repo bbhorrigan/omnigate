@@ -4,9 +4,11 @@ import { requireAuth, AuthenticatedRequest } from '../middleware';
 import { AuthService } from '../auth.service';
 import { cacheToken, getCachedToken, redisClient } from '../cache';
 import { getConnector, listConnectors } from './index';
+import { AuditService } from '../audit.service';
 
 const router = Router();
 const authService = new AuthService();
+const auditService = new AuditService();
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 
 // Most connect routes require auth
@@ -110,6 +112,16 @@ router.get('/:service/callback', async (req: Request, res: Response) => {
     }
 
     await authService.handleAuth(user.email, service, result.credentials);
+    // Best-effort audit log
+    auditService.log({
+      userId,
+      action: 'connect',
+      service,
+      method: req.method,
+      path: req.path,
+      ipAddress: req.ip || null,
+      metadata: { flow: 'oauth' },
+    });
     res.redirect(`/?connected=${service}`);
   } catch (err: any) {
     console.error(`Connector callback failed for ${service}:`, err);
@@ -131,6 +143,17 @@ router.post('/:service', async (req: Request, res: Response) => {
   try {
     const result = await connector.handleCallback(req.body, '');
     await authService.handleAuth(email, service, result.credentials);
+    // Best-effort audit log
+    auditService.log({
+      userId,
+      action: 'connect',
+      service,
+      method: req.method,
+      path: req.path,
+      statusCode: 200,
+      ipAddress: req.ip || null,
+      metadata: { flow: 'form' },
+    });
     res.json({ success: true, service, expiresAt: result.expiresAt });
   } catch (err: any) {
     res.status(500).json({ error: err.message });

@@ -1,0 +1,31 @@
+# =============================================================================
+# Example Terraform Variables — copy to terraform.tfvars and fill in values
+# =============================================================================
+
+aws_region = "us-east-1"
+
+# Networking
+vpc_id             = "vpc-0123456789abcdef0"
+public_subnet_ids  = ["subnet-aaa111", "subnet-bbb222"]
+private_subnet_ids = ["subnet-ccc333", "subnet-ddd444"]
+
+# Container
+container_image     = "123456789012.dkr.ecr.us-east-1.amazonaws.com/omnigate"
+container_image_tag = "1.2.0"
+desired_count       = 2
+task_cpu            = "512"
+task_memory         = "1024"
+
+# Database
+postgres_host = "omnigate-db.abc123.us-east-1.rds.amazonaws.com"
+postgres_port = 5432
+postgres_db   = "omnigate"
+
+# Secrets (AWS Secrets Manager ARNs)
+secret_postgres_user_arn        = "arn:aws:secretsmanager:us-east-1:123456789012:secret:omnigate/postgres-user-AbCdEf"
+secret_postgres_password_arn    = "arn:aws:secretsmanager:us-east-1:123456789012:secret:omnigate/postgres-password-AbCdEf"
+secret_redis_url_arn            = "arn:aws:secretsmanager:us-east-1:123456789012:secret:omnigate/redis-url-AbCdEf"
+secret_jwt_arn                  = "arn:aws:secretsmanager:us-east-1:123456789012:secret:omnigate/jwt-secret-AbCdEf"
+secret_encryption_key_arn       = "arn:aws:secretsmanager:us-east-1:123456789012:secret:omnigate/encryption-key-AbCdEf"
+secret_github_client_id_arn     = "arn:aws:secretsmanager:us-east-1:123456789012:secret:omnigate/github-client-id-AbCdEf"
+secret_github_client_secret_arn = "arn:aws:secretsmanager:us-east-1:123456789012:secret:omnigate/github-client-secret-AbCdEf"

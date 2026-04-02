@@ -1,0 +1,24 @@
+===========================================================
+  Omnigate has been deployed!
+===========================================================
+
+Release: {{ .Release.Name }}
+Namespace: {{ .Release.Namespace }}
+
+1. Get the application URL:
+{{- if .Values.ingress.enabled }}
+  https://{{ .Values.ingress.host }}
+{{- else if eq .Values.service.type "LoadBalancer" }}
+  NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+  Watch with:
+    kubectl get svc --namespace {{ .Release.Namespace }} -w {{ include "omnigate.fullname" . }}
+{{- else }}
+  kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "omnigate.fullname" . }} 3000:{{ .Values.service.port }}
+  Then visit: http://localhost:3000
+{{- end }}
+
+2. Check the health endpoint:
+  curl http://localhost:3000/health
+
+3. View logs:
+  kubectl logs -f --namespace {{ .Release.Namespace }} -l app.kubernetes.io/name={{ include "omnigate.name" . }}

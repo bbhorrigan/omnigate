@@ -4,9 +4,13 @@
   "description": "Authentication middleware for Omnigate",
   "type": "commonjs",
   "main": "dist/index.js",
+  "bin": {
+    "omnigate": "dist/cli.js"
+  },
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
+    "cli": "node dist/cli.js",
     "dev": "ts-node index.ts",
     "lint": "eslint . --ext .ts",
     "format": "prettier --write .",

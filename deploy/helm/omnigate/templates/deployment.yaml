@@ -1,0 +1,153 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "omnigate.fullname" . }}
+  labels:
+    {{- include "omnigate.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "omnigate.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "omnigate.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "omnigate.serviceAccountName" . }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.port }}
+              protocol: TCP
+          # -----------------------------------------------------------------
+          # Health checks
+          # -----------------------------------------------------------------
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.healthCheck.path }}
+              port: http
+            initialDelaySeconds: {{ .Values.healthCheck.initialDelaySeconds }}
+            periodSeconds: {{ .Values.healthCheck.periodSeconds }}
+            timeoutSeconds: {{ .Values.healthCheck.timeoutSeconds }}
+            failureThreshold: {{ .Values.healthCheck.failureThreshold }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.healthCheck.path }}
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: {{ .Values.healthCheck.timeoutSeconds }}
+            failureThreshold: {{ .Values.healthCheck.failureThreshold }}
+          # -----------------------------------------------------------------
+          # Environment variables
+          # -----------------------------------------------------------------
+          envFrom:
+            - configMapRef:
+                name: {{ include "omnigate.fullname" . }}
+          env:
+            # PostgreSQL credentials
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "omnigate.postgresqlSecretName" . }}
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "omnigate.postgresqlSecretName" . }}
+                  key: POSTGRES_PASSWORD
+            # Redis URL
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "omnigate.redisSecretName" . }}
+                  key: REDIS_URL
+            # JWT secret
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "omnigate.jwtSecretName" . }}
+                  key: JWT_SECRET
+            # Encryption key
+            - name: ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "omnigate.encryptionSecretName" . }}
+                  key: ENCRYPTION_KEY
+            # GitHub OAuth
+            - name: GITHUB_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "omnigate.githubSecretName" . }}
+                  key: GITHUB_CLIENT_ID
+            - name: GITHUB_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "omnigate.githubSecretName" . }}
+                  key: GITHUB_CLIENT_SECRET
+            {{- if .Values.oidc.enabled }}
+            # OIDC
+            - name: OIDC_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ default (printf "%s-oidc" (include "omnigate.fullname" .)) .Values.oidc.existingSecret }}
+                  key: OIDC_CLIENT_ID
+            - name: OIDC_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ default (printf "%s-oidc" (include "omnigate.fullname" .)) .Values.oidc.existingSecret }}
+                  key: OIDC_CLIENT_SECRET
+            {{- end }}
+            {{- if .Values.snowflake.enabled }}
+            - name: SNOWFLAKE_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ default (printf "%s-snowflake" (include "omnigate.fullname" .)) .Values.snowflake.existingSecret }}
+                  key: SNOWFLAKE_PRIVATE_KEY
+            {{- end }}
+            {{- if .Values.azure.enabled }}
+            - name: AZURE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ default (printf "%s-azure" (include "omnigate.fullname" .)) .Values.azure.existingSecret }}
+                  key: AZURE_CLIENT_SECRET
+            {{- end }}
+            {{- if .Values.gcp.enabled }}
+            - name: GCP_SERVICE_ACCOUNT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ default (printf "%s-gcp" (include "omnigate.fullname" .)) .Values.gcp.existingSecret }}
+                  key: GCP_SERVICE_ACCOUNT_KEY
+            {{- end }}
+            {{- if .Values.databricks.enabled }}
+            - name: DATABRICKS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ default (printf "%s-databricks" (include "omnigate.fullname" .)) .Values.databricks.existingSecret }}
+                  key: DATABRICKS_TOKEN
+            {{- end }}
+          # -----------------------------------------------------------------
+          # Resources
+          # -----------------------------------------------------------------
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

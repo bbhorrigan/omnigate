@@ -11,6 +11,7 @@ import { signAccessToken, createRefreshToken, consumeRefreshToken } from './jwt'
 import { requireAuth, AuthenticatedRequest } from './middleware';
 import { proxyRouter } from './proxy/proxy.router';
 import { connectRouter } from './connectors/connect.router';
+import { AuditService } from './audit.service';
 
 const app = express();
 app.use(express.json());
@@ -25,6 +26,7 @@ Promise.all([initDB(), initRedis()])
     console.log('Dependencies initialized');
 
     const authService = new AuthService();
+    const auditService = new AuditService();
 
     // Configure GitHub Strategy
     passport.use(new GitHubStrategy({
@@ -58,6 +60,16 @@ Promise.all([initDB(), initRedis()])
           const { id, email } = req.user;
           const accessToken = signAccessToken({ sub: id, email });
           const refreshToken = await createRefreshToken(id);
+          // Best-effort audit log
+          auditService.log({
+            userId: id,
+            action: 'auth',
+            service: 'github',
+            method: req.method,
+            path: req.path,
+            ipAddress: req.ip || null,
+            metadata: { event: 'login' },
+          });
           // Redirect to frontend with tokens
           res.redirect(`/?accessToken=${encodeURIComponent(accessToken)}&refreshToken=${encodeURIComponent(refreshToken)}`);
         } catch (error) {
@@ -104,6 +116,16 @@ Promise.all([initDB(), initRedis()])
             const { id, email } = req.user;
             const accessToken = signAccessToken({ sub: id, email });
             const refreshToken = await createRefreshToken(id);
+            // Best-effort audit log
+            auditService.log({
+              userId: id,
+              action: 'auth',
+              service: 'oidc',
+              method: req.method,
+              path: req.path,
+              ipAddress: req.ip || null,
+              metadata: { event: 'login' },
+            });
             res.json({ accessToken, refreshToken });
           } catch (error) {
             console.error('OIDC token issuance failed:', error);
@@ -135,6 +157,15 @@ Promise.all([initDB(), initRedis()])
 
       const newAccessToken = signAccessToken({ sub: userId, email: user.email });
       const newRefreshToken = await createRefreshToken(userId);
+      // Best-effort audit log
+      auditService.log({
+        userId,
+        action: 'auth',
+        method: req.method,
+        path: req.path,
+        ipAddress: req.ip || null,
+        metadata: { event: 'refresh' },
+      });
       res.json({ accessToken: newAccessToken, refreshToken: newRefreshToken });
     });
 
@@ -155,6 +186,16 @@ Promise.all([initDB(), initRedis()])
 
       try {
         await authService.handleAuth(email, service, credentials);
+        // Best-effort audit log
+        auditService.log({
+          userId,
+          action: 'credential_store',
+          service,
+          method: req.method,
+          path: req.path,
+          statusCode: 200,
+          ipAddress: req.ip || null,
+        });
         res.json({ success: true, service });
       } catch (error: any) {
         res.status(500).json({ error: error.message });
@@ -167,6 +208,19 @@ Promise.all([initDB(), initRedis()])
       try {
         const mappings = await authService.getUserMappings(userId);
         res.json({ services: mappings.map(m => ({ service: m.saasType, updatedAt: m.updatedAt })) });
+      } catch (error: any) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Audit log query endpoint
+    app.get('/audit', requireAuth, async (req: any, res: any) => {
+      const { sub: userId } = (req as AuthenticatedRequest).tokenPayload;
+      const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : undefined;
+      const service = req.query.service as string | undefined;
+      try {
+        const logs = await auditService.query(userId, { limit, service });
+        res.json({ logs });
       } catch (error: any) {
         res.status(500).json({ error: error.message });
       }

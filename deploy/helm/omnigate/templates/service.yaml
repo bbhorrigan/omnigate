@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "omnigate.fullname" . }}
+  labels:
+    {{- include "omnigate.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.targetPort }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "omnigate.selectorLabels" . | nindent 4 }}

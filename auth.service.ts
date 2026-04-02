@@ -3,6 +3,7 @@ import { AppDataSource } from './db';
 import { User } from './user';
 import { SaaSMapping } from './SaaSMapping';
 import { cacheToken } from './cache';
+import { encryptCredentials } from './crypto';
 
 type Credentials = Record<string, unknown>;
 
@@ -61,7 +62,10 @@ export class AuthService {
       throw new Error('saasType is required.');
     }
 
-    // Do user + mapping inside a transaction so we don’t end up with a user but no mapping (or vice versa)
+    // Encrypt credentials before persisting
+    const encryptedCreds = encryptCredentials(credentials);
+
+    // Do user + mapping inside a transaction so we don't end up with a user but no mapping (or vice versa)
     const { userId } = await this.ds.transaction(async (manager) => {
       const userRepo = manager.getRepository(User);
       const mappingRepo = manager.getRepository(SaaSMapping);
@@ -78,7 +82,7 @@ export class AuthService {
         {
           userId: user.id,
           saasType,
-          credentials: credentials as any,
+          credentials: encryptedCreds as any,
         },
         {
           conflictPaths: ['userId', 'saasType'],
@@ -89,11 +93,11 @@ export class AuthService {
       return { userId: user.id };
     });
 
-    // Cache (best-effort, don’t fail the whole request if Redis says no)
+    // Cache (best-effort, don't fail the whole request if Redis says no)
     try {
       await cacheToken(
         `user:${userId}:${saasType}`,
-        JSON.stringify(credentials),
+        JSON.stringify(encryptedCreds),
         this.cacheTtlSeconds
       );
     } catch (e) {

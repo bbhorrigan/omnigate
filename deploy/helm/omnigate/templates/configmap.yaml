@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "omnigate.fullname" . }}
+  labels:
+    {{- include "omnigate.labels" . | nindent 4 }}
+data:
+  NODE_ENV: {{ .Values.nodeEnv | quote }}
+  PORT: {{ .Values.port | quote }}
+  LOG_LEVEL: {{ .Values.logLevel | quote }}
+
+  # PostgreSQL (non-sensitive)
+  POSTGRES_HOST: {{ .Values.postgresql.host | quote }}
+  POSTGRES_PORT: {{ .Values.postgresql.port | quote }}
+  POSTGRES_DB: {{ .Values.postgresql.database | quote }}
+
+  {{- if .Values.oidc.enabled }}
+  # OIDC
+  OIDC_ISSUER_URL: {{ .Values.oidc.issuerUrl | quote }}
+  {{- end }}
+
+  {{- if .Values.snowflake.enabled }}
+  # Snowflake
+  SNOWFLAKE_ACCOUNT: {{ .Values.snowflake.account | quote }}
+  SNOWFLAKE_USERNAME: {{ .Values.snowflake.username | quote }}
+  {{- end }}
+
+  {{- if .Values.azure.enabled }}
+  # Azure
+  AZURE_TENANT_ID: {{ .Values.azure.tenantId | quote }}
+  AZURE_CLIENT_ID: {{ .Values.azure.clientId | quote }}
+  {{- end }}
+
+  {{- if .Values.gcp.enabled }}
+  # GCP
+  GCP_PROJECT_ID: {{ .Values.gcp.projectId | quote }}
+  {{- end }}
+
+  {{- if .Values.databricks.enabled }}
+  # Databricks
+  DATABRICKS_HOST: {{ .Values.databricks.host | quote }}
+  {{- end }}
