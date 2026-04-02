@@ -16,6 +16,7 @@ export class AwsConnector implements Connector {
   readonly displayName = 'AWS';
   readonly flowType = 'form' as const;
   readonly supportsRefresh = true;
+  readonly refreshBufferMs = 5 * 60 * 1000; // 5 min buffer for 1-hour STS tokens
 
   private get accessKeyId() { return process.env.AWS_ACCESS_KEY_ID || ''; }
   private get secretAccessKey() { return process.env.AWS_SECRET_ACCESS_KEY || ''; }

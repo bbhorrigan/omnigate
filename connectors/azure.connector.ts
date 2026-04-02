@@ -11,6 +11,7 @@ export class AzureConnector implements Connector {
   readonly displayName = 'Azure';
   readonly flowType = 'oauth' as const;
   readonly supportsRefresh = true;
+  readonly refreshBufferMs = 5 * 60 * 1000; // 5 min buffer for 1-hour tokens
 
   private get tenantId() { return process.env.AZURE_TENANT_ID || 'common'; }
   private get clientId() { return process.env.AZURE_CLIENT_ID || ''; }
@@ -94,7 +95,7 @@ export class AzureConnector implements Connector {
       credentials: {
         ...credentials,
         token: data.access_token,
-        refreshToken: data.refresh_token || credentials.refreshToken,
+        refreshToken: data.refresh_token || credentials.refreshToken,  // Preserve if refresh_token not rotated
         expiresAt: expiresAt.toISOString(),
       },
       expiresAt,

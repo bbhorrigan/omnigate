@@ -13,6 +13,7 @@ export class DatabricksConnector implements Connector {
   readonly displayName = 'Databricks';
   readonly flowType = 'oauth' as const;
   readonly supportsRefresh = true;
+  readonly refreshBufferMs = 5 * 60 * 1000; // 5 min buffer for 1-hour tokens
 
   private get clientId() { return process.env.DATABRICKS_CLIENT_ID || ''; }
   private get clientSecret() { return process.env.DATABRICKS_CLIENT_SECRET || ''; }
@@ -92,7 +93,7 @@ export class DatabricksConnector implements Connector {
       credentials: {
         ...credentials,
         token: data.access_token,
-        refreshToken: data.refresh_token || credentials.refreshToken,
+        refreshToken: data.refresh_token || credentials.refreshToken,  // Preserve if refresh_token not rotated
         expiresAt: expiresAt.toISOString(),
       },
       expiresAt,
