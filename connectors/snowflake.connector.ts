@@ -19,6 +19,7 @@ export class SnowflakeConnector implements Connector {
   readonly displayName = 'Snowflake';
   readonly flowType = 'oauth' as const;
   readonly supportsRefresh = true;
+  readonly refreshBufferMs = 2 * 60 * 1000; // 2 min buffer for 10 min tokens
 
   private get account() { return process.env.SNOWFLAKE_ACCOUNT || ''; }
   private get clientId() { return process.env.SNOWFLAKE_OAUTH_CLIENT_ID || ''; }

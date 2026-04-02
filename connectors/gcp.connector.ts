@@ -92,6 +92,7 @@ export class GcpConnector implements Connector {
       credentials: {
         ...credentials,
         token: data.access_token,
+        refreshToken: credentials.refreshToken,  // GCP never rotates; preserve explicitly
         expiresAt: expiresAt.toISOString(),
       },
       expiresAt,

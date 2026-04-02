@@ -1,3 +1,5 @@
+export const DEFAULT_REFRESH_BUFFER_MS = 5 * 60 * 1000; // refresh 5 minutes before expiry
+
 export interface TokenResult {
   /** Credentials to store in SaaSMapping.credentials JSONB */
   credentials: Record<string, any>;
@@ -29,4 +31,7 @@ export interface Connector {
 
   /** Whether this connector supports automatic refresh */
   readonly supportsRefresh: boolean;
+
+  /** Optional refresh buffer in milliseconds (defaults to DEFAULT_REFRESH_BUFFER_MS) */
+  readonly refreshBufferMs?: number;
 }

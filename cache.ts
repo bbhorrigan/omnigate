@@ -60,6 +60,15 @@ export const getCachedToken = async (key: string) => {
   }
 };
 
+export const deleteCachedToken = async (key: string): Promise<void> => {
+  if (!redisClient) throw new Error('Redis not initialized');
+  try {
+    await redisClient.del(key);
+  } catch (error) {
+    console.error(`Failed to delete cached token for key "${key}":`, error);
+  }
+};
+
 export const closeRedis = async () => {
   if (redisClient) {
     try {

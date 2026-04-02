@@ -118,4 +118,39 @@ export class AuthService {
       select: ['saasType', 'updatedAt'],
     });
   }
+
+  /**
+   * Updates credentials for a user directly by userId, avoiding User lookup.
+   * Used by refresh service to write refreshed credentials efficiently.
+   */
+  async updateCredentialsByUserId(userId: string, saasType: string, credentials: Credentials) {
+    // Encrypt credentials before persisting
+    const encryptedCreds = encryptCredentials(credentials);
+
+    // Direct upsert on SaaSMapping by userId (no User lookup)
+    await this.mappingRepo.upsert(
+      {
+        userId,
+        saasType,
+        credentials: encryptedCreds as any,
+      },
+      {
+        conflictPaths: ['userId', 'saasType'],
+        skipUpdateIfNoValuesChanged: true,
+      }
+    );
+
+    // Cache (best-effort, don't fail if Redis says no)
+    try {
+      await cacheToken(
+        `user:${userId}:${saasType}`,
+        JSON.stringify(encryptedCreds),
+        this.cacheTtlSeconds
+      );
+    } catch (e) {
+      // Log and keep moving; caching is an optimization, not the source of truth
+    }
+
+    return { success: true, userId };
+  }
 }
