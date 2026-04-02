@@ -8,7 +8,6 @@ dist/
 build/
 out/
 .package-lock.json
-package-lock.json
 .cache/
 .turbo/
 .nyc_output/
